@@ -1,9 +1,6 @@
-from decimal import Decimal
-
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from jose import JWTError
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
@@ -18,31 +15,40 @@ from app.services.usdt import USDTService
 
 router = APIRouter()
 
-
-class SePayPayload(BaseModel):
-    reference: str
-    amount: Decimal
-    note: str | None = None
-
-
 @router.post("/sepay", response_model=MessageResponse)
 async def sepay_webhook(
-    payload: SePayPayload,
     request: Request,
     session: AsyncSession = Depends(get_session),
     x_sepay_signature: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
 ) -> MessageResponse:
+    raw_payload = await request.json()
+    if not isinstance(raw_payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid SePay payload")
     await RateLimitService().enforce(
         bucket="webhook_sepay",
-        key=f"{request.client.host if request.client else 'unknown'}:{x_sepay_signature or 'unsigned'}",
+        key=f"{request.client.host if request.client else 'unknown'}:{x_sepay_signature or authorization or 'unsigned'}",
         limit=settings.webhook_rate_limit_per_minute,
         window_seconds=60,
     )
     sepay_service = SePayService(session)
     configured_secret = await sepay_service.get_webhook_secret()
-    if configured_secret and x_sepay_signature != configured_secret:
+    authorization_key = ""
+    if authorization and authorization.lower().startswith("apikey "):
+        authorization_key = authorization[7:].strip()
+    if configured_secret and x_sepay_signature != configured_secret and authorization_key != configured_secret:
         raise HTTPException(status_code=401, detail="Invalid SePay signature")
-    matched = await sepay_service.process_webhook(payload.reference, payload.amount, payload.note)
+    try:
+        reference, amount, note, external_id, normalized_payload = sepay_service.parse_webhook_payload(raw_payload)
+    except (ValueError, ArithmeticError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    matched = await sepay_service.process_webhook_event(
+        reference=reference,
+        amount=amount,
+        note=note,
+        external_id=external_id,
+        raw_payload=normalized_payload,
+    )
     if not matched:
         raise HTTPException(status_code=404, detail="Customer reference not found")
     return MessageResponse(message="SePay webhook processed")

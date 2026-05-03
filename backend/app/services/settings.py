@@ -16,7 +16,13 @@ SETTING_KEYS: dict[str, str] = {
     "frontend_public_base_url": "Public frontend base URL for detail links",
     "agency_usdt_wallet": "Agency USDT wallet address",
     "trongrid_api_key": "TronGrid API key",
+    "usdt_trc20_contract": "USDT TRC20 contract address used for deposit validation",
     "sepay_webhook_secret": "SePay webhook secret",
+    "sepay_api_token": "SePay API token for bank account balance checks",
+    "sepay_bank_account_id": "SePay bank account ID to track company bank balance",
+    "smit_base_url": "SMIT API base URL",
+    "smit_api_key": "SMIT API key",
+    "smit_sync_url_template": "SMIT sync URL template with {account_id} placeholder",
     "default_commission_rate": "Default referral commission rate",
 }
 

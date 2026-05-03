@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-from app.models.ad_account import AdAccountStatus, Platform
+from app.models.ad_account import AdAccountStatus, AdSpendProvider, FacebookPaymentStatus, Platform
 from app.schemas.common import ORMBase
 
 
@@ -21,6 +21,11 @@ class AdAccountCreate(BaseModel):
     business_license_name: str | None = None
     request_id: str | None = None
     team_id: str | None = None
+    spend_provider: AdSpendProvider = AdSpendProvider.facebook_graph
+    amount_due: Decimal = Decimal("0.00")
+    prepaid_balance: Decimal = Decimal("0.00")
+    payment_threshold: Decimal = Decimal("0.00")
+    payment_status: FacebookPaymentStatus = FacebookPaymentStatus.healthy
 
 
 class AdAccountUpdate(BaseModel):
@@ -30,6 +35,11 @@ class AdAccountUpdate(BaseModel):
     business_license_name: str | None = None
     request_id: str | None = None
     team_id: str | None = None
+    spend_provider: AdSpendProvider | None = None
+    amount_due: Decimal | None = None
+    prepaid_balance: Decimal | None = None
+    payment_threshold: Decimal | None = None
+    payment_status: FacebookPaymentStatus | None = None
 
 
 class AdAccountResponse(ORMBase):
@@ -47,6 +57,11 @@ class AdAccountResponse(ORMBase):
     business_license_name: str | None = None
     request_id: str | None = None
     team_id: str | None = None
+    spend_provider: AdSpendProvider
+    amount_due: Decimal
+    prepaid_balance: Decimal
+    payment_threshold: Decimal
+    payment_status: FacebookPaymentStatus
+    last_payment_at: datetime | None = None
     last_synced_at: datetime | None = None
     created_at: datetime
-

@@ -22,6 +22,7 @@ class USDTService:
     async def poll_transactions(self) -> dict[str, int]:
         settings_map = await SettingsService(self.session).get_settings_map()
         trongrid_api_key = settings_map.get("trongrid_api_key", "")
+        usdt_contract = settings_map.get("usdt_trc20_contract", "")
         if not trongrid_api_key:
             return {"processed": 0}
         processed = 0
@@ -47,6 +48,10 @@ class USDTService:
                     tx_id = item.get("transaction_id", "")
                     if not tx_id:
                         continue
+                    if usdt_contract and (item.get("token_info") or {}).get("address") not in {"", usdt_contract}:
+                        continue
+                    if item.get("confirmed") is False:
+                        continue
                     if await event_service.already_processed("trongrid", tx_id):
                         await ReconciliationService(self.session).create_record(
                             channel=ReconciliationChannel.usdt,
@@ -63,6 +68,8 @@ class USDTService:
                     if destination and destination != deposit_address.address:
                         continue
                     amount = Decimal(item.get("value", "0")) / Decimal("1000000")
+                    if amount <= 0:
+                        continue
                     customer = await self.session.get(Customer, deposit_address.customer_id)
                     if not customer:
                         continue

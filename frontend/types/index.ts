@@ -78,9 +78,17 @@ export type AdAccount = {
   account_id: string;
   account_name: string;
   status: "ACTIVE" | "DISABLED";
+  spend_provider: "facebook_graph" | "smit";
   balance: string;
   spend_today: string;
   spend_7d: string;
+  spend_28d: string;
+  spend_90d: string;
+  amount_due: string;
+  prepaid_balance: string;
+  payment_threshold: string;
+  payment_status: "healthy" | "due" | "overdue";
+  last_payment_at?: string | null;
   last_synced_at?: string | null;
 };
 

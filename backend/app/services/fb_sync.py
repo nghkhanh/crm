@@ -5,8 +5,9 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.ad_account import AdAccount, AdAccountStatus, Platform
+from app.models.ad_account import AdAccount, AdAccountStatus, AdSpendProvider, FacebookPaymentStatus, Platform
 from app.services.settings import SettingsService
+from app.services.smit_sync import SmitSyncService
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +31,19 @@ class FacebookSyncService:
         settings_map = await SettingsService(self.session).get_settings_map()
         fb_system_user_token = settings_map.get("fb_system_user_token", "")
         fb_business_id = settings_map.get("fb_business_id", "")
-
-        if not fb_system_user_token or not fb_business_id or not FacebookAdsApi:
-            logger.warning("Facebook sync skipped because credentials or SDK are unavailable")
-            return {"synced": 0, "failed": len(accounts)}
-
-        FacebookAdsApi.init(access_token=fb_system_user_token)
+        facebook_graph_ready = bool(fb_system_user_token and fb_business_id and FacebookAdsApi)
+        if facebook_graph_ready:
+            FacebookAdsApi.init(access_token=fb_system_user_token)
 
         for account in accounts:
             try:
-                self._sync_single_account(account)
+                if account.spend_provider == AdSpendProvider.smit:
+                    await SmitSyncService(self.session).sync_account(account)
+                else:
+                    if not facebook_graph_ready:
+                        raise RuntimeError("Facebook Graph credentials or SDK are unavailable")
+                    self._sync_single_account(account)
+                    account.payment_status = self._resolve_payment_status(account)
                 account.last_synced_at = datetime.now(timezone.utc)
                 synced += 1
             except Exception as exc:  # pragma: no cover
@@ -64,3 +68,11 @@ class FacebookSyncService:
         account.spend_7d = spend_90d
         account.spend_28d = spend_90d
         account.spend_90d = spend_90d
+
+    @staticmethod
+    def _resolve_payment_status(account: AdAccount) -> FacebookPaymentStatus:
+        if Decimal(account.prepaid_balance) <= Decimal("0") or Decimal(account.amount_due) > Decimal(account.prepaid_balance):
+            return FacebookPaymentStatus.overdue
+        if Decimal(account.prepaid_balance) <= Decimal(account.payment_threshold):
+            return FacebookPaymentStatus.due
+        return FacebookPaymentStatus.healthy

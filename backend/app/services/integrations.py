@@ -21,6 +21,7 @@ class IntegrationHealthService:
             await self.check_lark(settings_map),
             await self.check_sepay(settings_map),
             await self.check_trongrid(settings_map),
+            await self.check_smit(settings_map),
         ]
 
     async def validate_facebook_credentials(self) -> FacebookValidationResponse:
@@ -89,9 +90,33 @@ class IntegrationHealthService:
 
     async def check_sepay(self, settings_map: dict[str, str]) -> IntegrationHealthResponse:
         secret = settings_map.get("sepay_webhook_secret", "")
-        if not secret:
-            return IntegrationHealthResponse(name="sepay", configured=False, reachable=False, message="Missing webhook secret")
-        return IntegrationHealthResponse(name="sepay", configured=True, reachable=True, message="Webhook secret configured")
+        api_token = settings_map.get("sepay_api_token", "")
+        bank_account_id = settings_map.get("sepay_bank_account_id", "")
+        if not secret and not api_token:
+            return IntegrationHealthResponse(name="sepay", configured=False, reachable=False, message="Missing webhook secret or API token")
+        if not api_token or not bank_account_id:
+            return IntegrationHealthResponse(name="sepay", configured=bool(secret), reachable=bool(secret), message="Webhook configured, bank balance check not configured")
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                response = await client.get(
+                    f"https://my.sepay.vn/userapi/bankaccounts/details/{bank_account_id}",
+                    headers={"Authorization": f"Bearer {api_token}", "Accept": "application/json"},
+                )
+                response.raise_for_status()
+                payload = response.json()
+            data = payload.get("data") if isinstance(payload, dict) else None
+            if not isinstance(data, dict):
+                data = payload if isinstance(payload, dict) else {}
+            balance = data.get("balance") or data.get("account_balance") or "-"
+            account_number = data.get("account_number") or data.get("accountNumber") or bank_account_id
+            return IntegrationHealthResponse(
+                name="sepay",
+                configured=True,
+                reachable=True,
+                message=f"Bank account {account_number} reachable, balance={balance}",
+            )
+        except Exception as exc:
+            return IntegrationHealthResponse(name="sepay", configured=True, reachable=False, message=str(exc))
 
     async def check_trongrid(self, settings_map: dict[str, str]) -> IntegrationHealthResponse:
         wallet = settings_map.get("agency_usdt_wallet", "")
@@ -108,3 +133,16 @@ class IntegrationHealthService:
             return IntegrationHealthResponse(name="trongrid", configured=True, reachable=True, message="TronGrid reachable")
         except Exception as exc:
             return IntegrationHealthResponse(name="trongrid", configured=True, reachable=False, message=str(exc))
+
+    async def check_smit(self, settings_map: dict[str, str]) -> IntegrationHealthResponse:
+        base_url = settings_map.get("smit_base_url", "")
+        api_key = settings_map.get("smit_api_key", "")
+        url_template = settings_map.get("smit_sync_url_template", "")
+        if not base_url or not api_key or not url_template:
+            return IntegrationHealthResponse(name="smit", configured=False, reachable=False, message="Missing SMIT base URL, API key, or sync URL template")
+        return IntegrationHealthResponse(
+            name="smit",
+            configured=True,
+            reachable=False,
+            message="SMIT connector configured; validate it by running a live sync against a real account endpoint",
+        )

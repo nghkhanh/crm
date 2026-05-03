@@ -19,7 +19,13 @@ export default function SettingsPage() {
     frontend_public_base_url: "",
     agency_usdt_wallet: "",
     trongrid_api_key: "",
+    usdt_trc20_contract: "",
     sepay_webhook_secret: "",
+    sepay_api_token: "",
+    sepay_bank_account_id: "",
+    smit_base_url: "",
+    smit_api_key: "",
+    smit_sync_url_template: "",
     default_commission_rate: "5"
   });
   const [message, setMessage] = useState<string | null>(null);
@@ -47,13 +53,20 @@ export default function SettingsPage() {
     { key: "frontend_public_base_url", label: t("frontend_public_base_url") },
     { key: "agency_usdt_wallet", label: t("agency_usdt_wallet") },
     { key: "trongrid_api_key", label: "TronGrid API Key" },
+    { key: "usdt_trc20_contract", label: t("usdt_trc20_contract") },
     { key: "sepay_webhook_secret", label: "SePay Webhook Secret" },
+    { key: "sepay_api_token", label: t("sepay_api_token") },
+    { key: "sepay_bank_account_id", label: t("sepay_bank_account_id") },
+    { key: "smit_base_url", label: t("smit_base_url") },
+    { key: "smit_api_key", label: t("smit_api_key") },
+    { key: "smit_sync_url_template", label: t("smit_sync_url_template") },
     { key: "default_commission_rate", label: t("default_commission_rate") }
   ];
 
   const healthMap = new Map(health.map((item) => [item.name, item]));
   const sepayHealth = healthMap.get("sepay");
   const trongridHealth = healthMap.get("trongrid");
+  const smitHealth = healthMap.get("smit");
 
   return (
     <div className="space-y-6">
@@ -134,7 +147,7 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
-        <div className="mb-6 grid gap-3 xl:grid-cols-3">
+        <div className="mb-6 grid gap-3 xl:grid-cols-4">
           <div className="rounded-[22px] border border-[#e3eaf4] p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="font-medium text-ink">{t("facebook_live_check")}</p>
@@ -186,6 +199,25 @@ export default function SettingsPage() {
             </div>
             <p className="mt-2 text-sm text-mute">{t("live_validation_note_trongrid")}</p>
             <p className="mt-3 text-sm text-slate-700">{trongridHealth?.message ?? t("validation_not_run")}</p>
+          </div>
+          <div className="rounded-[22px] border border-[#e3eaf4] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-medium text-ink">{t("smit_live_check")}</p>
+              {smitHealth ? (
+                <div className="flex gap-2">
+                  <Badge tone={smitHealth.configured ? "success" : "warning"}>
+                    {t("configured")}: {smitHealth.configured ? "yes" : "no"}
+                  </Badge>
+                  <Badge tone={smitHealth.reachable ? "success" : "danger"}>
+                    {t("reachable")}: {smitHealth.reachable ? "yes" : "no"}
+                  </Badge>
+                </div>
+              ) : (
+                <Badge tone="warning">{t("validation_not_run")}</Badge>
+              )}
+            </div>
+            <p className="mt-2 text-sm text-mute">{t("live_validation_note_smit")}</p>
+            <p className="mt-3 text-sm text-slate-700">{smitHealth?.message ?? t("validation_not_run")}</p>
           </div>
         </div>
         <div className="space-y-3">

@@ -18,9 +18,20 @@ class Platform(str, Enum):
     google = "google"
 
 
+class AdSpendProvider(str, Enum):
+    facebook_graph = "facebook_graph"
+    smit = "smit"
+
+
 class AdAccountStatus(str, Enum):
     active = "ACTIVE"
     disabled = "DISABLED"
+
+
+class FacebookPaymentStatus(str, Enum):
+    healthy = "healthy"
+    due = "due"
+    overdue = "overdue"
 
 
 class AdAccount(TimestampMixin, Base):
@@ -46,6 +57,20 @@ class AdAccount(TimestampMixin, Base):
     business_license_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     request_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     team_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    spend_provider: Mapped[AdSpendProvider] = mapped_column(
+        SqlEnum(AdSpendProvider, name="ad_spend_provider", values_callable=enum_values),
+        default=AdSpendProvider.facebook_graph,
+        server_default=AdSpendProvider.facebook_graph.value,
+    )
+    amount_due: Mapped[Decimal] = mapped_column(Numeric(18, 2), default=Decimal("0.00"), server_default="0.00")
+    prepaid_balance: Mapped[Decimal] = mapped_column(Numeric(18, 2), default=Decimal("0.00"), server_default="0.00")
+    payment_threshold: Mapped[Decimal] = mapped_column(Numeric(18, 2), default=Decimal("0.00"), server_default="0.00")
+    payment_status: Mapped[FacebookPaymentStatus] = mapped_column(
+        SqlEnum(FacebookPaymentStatus, name="facebook_payment_status", values_callable=enum_values),
+        default=FacebookPaymentStatus.healthy,
+        server_default=FacebookPaymentStatus.healthy.value,
+    )
+    last_payment_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     customer = relationship("Customer", back_populates="ad_accounts")

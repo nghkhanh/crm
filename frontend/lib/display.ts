@@ -9,6 +9,36 @@ export function formatPlatform(platform: string, language: Language) {
   return map[platform] ?? platform;
 }
 
+export function formatSpendProvider(provider: string, language: Language) {
+  const map: Record<Language, Record<string, string>> = {
+    vi: {
+      facebook_graph: "Facebook API",
+      smit: "SMIT",
+    },
+    en: {
+      facebook_graph: "Facebook API",
+      smit: "SMIT",
+    },
+  };
+  return map[language][provider] ?? provider;
+}
+
+export function formatFacebookPaymentStatus(status: string, language: Language) {
+  const map: Record<Language, Record<string, string>> = {
+    vi: {
+      healthy: "Ổn định",
+      due: "Cần nạp",
+      overdue: "Rủi ro",
+    },
+    en: {
+      healthy: "Healthy",
+      due: "Due",
+      overdue: "At Risk",
+    },
+  };
+  return map[language][status] ?? status;
+}
+
 export function formatTransactionType(type: string, language: Language) {
   const map: Record<Language, Record<string, string>> = {
     vi: {
