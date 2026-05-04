@@ -1,4 +1,5 @@
 from functools import lru_cache
+from urllib.parse import urlparse
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -33,11 +34,30 @@ class Settings(BaseSettings):
     smit_sync_url_template: str = Field(default="", alias="SMIT_SYNC_URL_TEMPLATE")
     backend_public_base_url: str = Field(default="http://localhost:8000", alias="BACKEND_PUBLIC_BASE_URL")
     frontend_public_base_url: str = Field(default="http://localhost:3000", alias="FRONTEND_PUBLIC_BASE_URL")
+    cors_origins_raw: str = Field(default="", alias="CORS_ORIGINS")
     default_admin_email: str = Field(default="admin@agency.local", alias="DEFAULT_ADMIN_EMAIL")
     default_admin_password: str = Field(default="changeme123", alias="DEFAULT_ADMIN_PASSWORD")
     default_commission_rate: float = Field(default=5, alias="DEFAULT_COMMISSION_RATE")
     seed_demo_data: bool = Field(default=False, alias="SEED_DEMO_DATA")
-    cors_origins: list[str] = ["http://localhost:3000", "http://frontend:3000"]
+
+    @property
+    def cors_origins(self) -> list[str]:
+        origins = {
+            "http://localhost:3000",
+            "http://frontend:3000",
+        }
+
+        for base_url in (self.frontend_public_base_url, self.backend_public_base_url):
+            if not base_url:
+                continue
+            parsed = urlparse(base_url)
+            if parsed.scheme and parsed.netloc:
+                origins.add(f"{parsed.scheme}://{parsed.netloc}")
+
+        if self.cors_origins_raw.strip():
+            origins.update(origin.strip() for origin in self.cors_origins_raw.split(",") if origin.strip())
+
+        return sorted(origins)
 
 
 @lru_cache

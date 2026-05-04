@@ -3,6 +3,7 @@
 Monorepo for a CRM built with FastAPI, Next.js 14, PostgreSQL, Redis, and APScheduler.
 
 Enterprise rollout plan: [PRODUCT_ROADMAP.md](/Users/khanhnh/crm/PRODUCT_ROADMAP.md)
+Production deploy: [DEPLOY_PRODUCTION.md](/Users/khanhnh/crm/DEPLOY_PRODUCTION.md)
 
 ## Services
 
