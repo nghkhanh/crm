@@ -47,6 +47,8 @@ NEXT_PUBLIC_API_BASE_URL=/api
 BACKEND_PUBLIC_BASE_URL=https://crm.example.com
 FRONTEND_PUBLIC_BASE_URL=https://crm.example.com
 CORS_ORIGINS=
+PUBLIC_DOMAIN=crm.example.com
+ACME_EMAIL=ops@example.com
 
 SEED_DEMO_DATA=false
 ```
@@ -82,15 +84,16 @@ docker compose -f docker-compose.prod.yml logs -f frontend
 
 Health checks:
 
-- Nginx public: `http://<public-ip>/`
-- Backend health via proxy: `http://<public-ip>/health`
-- API readiness via proxy: `http://<public-ip>/api/ops/ready`
+- Public HTTP: `http://<domain>/`
+- Public HTTPS: `https://<domain>/`
+- Backend health via proxy: `https://<domain>/health`
+- API readiness via proxy: `https://<domain>/api/ops/ready`
 
 ## 6. Reverse proxy
 
-Repo đã có sẵn reverse proxy Nginx trong:
+Repo đã có sẵn reverse proxy Caddy trong:
 
-- [deploy/nginx/default.conf](/Users/khanhnh/crm/deploy/nginx/default.conf)
+- [deploy/caddy/Caddyfile](/Users/khanhnh/crm/deploy/caddy/Caddyfile)
 
 Luồng hiện tại:
 
@@ -98,17 +101,23 @@ Luồng hiện tại:
 - `/api/` -> backend
 - `/health` -> backend health
 
+Điều kiện để HTTPS tự lên:
+
+- `PUBLIC_DOMAIN` phải trỏ đúng về public IP server
+- inbound `80` và `443` phải mở trong Security Group
+- `ACME_EMAIL` nên là email thật để nhận cảnh báo chứng chỉ
+
 Sau khi deploy production compose, truy cập:
 
-- `http://<public-ip>/login`
-- `http://<public-ip>/api/ops/ready`
+- `https://<domain>/login`
+- `https://<domain>/api/ops/ready`
 
 ## 7. Các lưu ý quan trọng
 
 - Không expose `postgres` và `redis` ra ngoài internet.
 - Không dùng `docker-compose.yml` local để deploy production.
 - Nếu host đã có PostgreSQL native chạy ở `5432`, điều đó không ảnh hưởng vì file production này không bind port DB ra host.
-- Security Group cần mở `80` để truy cập qua Nginx.
+- Security Group cần mở `80` và `443` để Caddy lấy chứng chỉ và phục vụ HTTPS.
 - Không cần mở `3000` hoặc `8000` nếu dùng file production này.
 - Mỗi lần update code:
 
