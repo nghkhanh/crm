@@ -53,6 +53,7 @@ export default function SettingsPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [walletForm, setWalletForm] = useState({ address: "", label: "", note: "" });
   const [autoSaveState, setAutoSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [checking, setChecking] = useState<Record<string, boolean>>({});
 
   const initializedRef = useRef(false);
   const lastSavedSnapshotRef = useRef("");
@@ -157,8 +158,30 @@ export default function SettingsPage() {
     setCustomers(customerResult.items);
   }
 
+  async function checkIntegration(target: "facebook" | "sepay" | "trongrid" | "smit") {
+    setChecking((current) => ({ ...current, [target]: true }));
+    setMessage(null);
+    try {
+      if (target === "facebook") {
+        const [healthResult, facebookResult] = await Promise.all([
+          apiClient.get<IntegrationHealth[]>("/integrations/health"),
+          apiClient.get<FacebookValidation>("/integrations/facebook/validate")
+        ]);
+        setHealth(healthResult);
+        setFacebookValidation(facebookResult);
+      } else {
+        const healthResult = await apiClient.get<IntegrationHealth[]>("/integrations/health");
+        setHealth(healthResult);
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : t("settings_save_failed"));
+    } finally {
+      setChecking((current) => ({ ...current, [target]: false }));
+    }
+  }
+
   useEffect(() => {
-    Promise.all([loadSettings(), loadChecks(), loadTreasury()]).catch(() => setMessage(null));
+    Promise.all([loadSettings(), loadTreasury()]).catch(() => setMessage(null));
   }, []);
 
   const valuesSnapshot = useMemo(() => JSON.stringify(values), [values]);
@@ -178,7 +201,6 @@ export default function SettingsPage() {
         await apiClient.patch("/settings", values);
         lastSavedSnapshotRef.current = valuesSnapshot;
         setAutoSaveState("saved");
-        await loadChecks();
       } catch (error) {
         setAutoSaveState("error");
         setMessage(error instanceof Error ? error.message : t("settings_save_failed"));
@@ -224,7 +246,18 @@ export default function SettingsPage() {
                   <h3 className="text-lg font-semibold text-ink">{section.title}</h3>
                   <p className="mt-1 text-sm text-mute">{section.description}</p>
                 </div>
-                <div className="max-w-[320px]">{renderSectionBadge(section)}</div>
+                <div className="flex items-center gap-2">
+                  {section.integration ? (
+                    <button
+                      className="rounded-full border border-[#d9e3f0] px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-[#93c5fd] hover:text-[#1d4ed8]"
+                      type="button"
+                      onClick={() => checkIntegration(section.integration!)}
+                    >
+                      {checking[section.integration] ? "Dang kiem tra..." : "Kiểm tra"}
+                    </button>
+                  ) : null}
+                  <div className="max-w-[320px]">{renderSectionBadge(section)}</div>
+                </div>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {section.fields.map((field) => (
