@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/table";
 import { apiClient } from "@/lib/api";
 import {
@@ -89,7 +88,6 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("transactions")} />
       <Card className="surface-muted">
         <div className="flex gap-2">
           <button

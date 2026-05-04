@@ -47,8 +47,8 @@ class LarkService:
                         "tag": "div",
                         "fields": [
                             {"is_short": False, "text": {"tag": "lark_md", "content": f"**Khách hàng:** {customer.full_name}"}},
-                            {"is_short": True, "text": {"tag": "lark_md", "content": f"**Hạng mục:** {request_category}"}},
-                            {"is_short": True, "text": {"tag": "lark_md", "content": f"**Nền tảng:** {platform_label}"}},
+                            {"is_short": False, "text": {"tag": "lark_md", "content": f"**Hạng mục:** {request_category}"}},
+                            {"is_short": False, "text": {"tag": "lark_md", "content": f"**Nền tảng:** {platform_label}"}},
                             {"is_short": False, "text": {"tag": "lark_md", "content": f"**Ghi chú:** {note}"}},
                         ],
                     },

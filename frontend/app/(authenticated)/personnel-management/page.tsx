@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { DataTable } from "@/components/ui/table";
-import { PageHeader } from "@/components/ui/page-header";
 import { apiClient } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { StaffMember } from "@/types";
@@ -78,8 +77,6 @@ export default function PersonnelManagementPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("personnel_management")} />
-
       <section className="rounded-[28px] border border-[#e3eaf4] bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-xl font-semibold tracking-[-0.03em] text-slate-900">

@@ -6,17 +6,22 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { apiClient } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Bell, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { UserProfile } from "@/types";
 
 export function Topbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<UserProfile | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     apiClient.get<UserProfile>("/auth/me").then(setUser).catch(() => setUser(null));
   }, []);
+
+  if (!pathname.startsWith("/settings")) {
+    return null;
+  }
 
   return (
     <header className="flex flex-col gap-4 rounded-[26px] border border-[#e3eaf4] bg-white px-5 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] md:flex-row md:items-center md:justify-between">

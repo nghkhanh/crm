@@ -101,6 +101,22 @@ export function formatReconciliationStatus(status: string, language: Language) {
   return map[language][status] ?? status;
 }
 
+export function formatWalletGasStatus(status: string, language: Language) {
+  const map: Record<Language, Record<string, string>> = {
+    vi: { unknown: "Chưa rõ", ok: "Đủ gas", low: "TRX thấp", missing: "Thiếu TRX" },
+    en: { unknown: "Unknown", ok: "Gas OK", low: "Low TRX", missing: "Missing TRX" }
+  };
+  return map[language][status] ?? status;
+}
+
+export function formatWalletSweepStatus(status: string, language: Language) {
+  const map: Record<Language, Record<string, string>> = {
+    vi: { idle: "Chưa cần", ready: "Sẵn sàng sweep", pending: "Chờ sweep", completed: "Đã sweep", failed: "Sweep lỗi" },
+    en: { idle: "Idle", ready: "Ready", pending: "Pending", completed: "Completed", failed: "Failed" }
+  };
+  return map[language][status] ?? status;
+}
+
 export function formatTicketType(type: string, language: Language) {
   const map: Record<Language, Record<string, string>> = {
     vi: {

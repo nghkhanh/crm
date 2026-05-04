@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { apiClient } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { formatPlatform, formatTicketStatus, formatTicketType } from "@/lib/display";
@@ -58,7 +57,6 @@ export default function TicketsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("tickets")} />
       <Card className="surface-muted">
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>

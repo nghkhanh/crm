@@ -78,6 +78,10 @@ export const apiClient = {
       method: "PATCH",
       body: body ? JSON.stringify(body) : undefined
     }),
+  delete: <T>(path: string) =>
+    request<T>(path, {
+      method: "DELETE"
+    }),
   logout: async () => {
     const refreshToken = getRefreshToken();
     const accessToken = getAccessToken();

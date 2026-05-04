@@ -12,9 +12,11 @@ from app.models.user import Permission, User
 from app.schemas.ad_account import AdAccountResponse
 from app.schemas.customer import CustomerCreate, CustomerDetailResponse, CustomerResponse, CustomerUpdate
 from app.schemas.ticket import TicketResponse
+from app.schemas.treasury import UsdtWalletInventoryResponse
 from app.schemas.transaction import TransactionResponse
 from app.schemas.usdt_address import CustomerUsdtAddressCreate, CustomerUsdtAddressResponse, CustomerUsdtAddressUpdate
 from app.services.audit import write_audit_log
+from app.services.usdt_wallet_ops import UsdtWalletOpsService
 
 router = APIRouter()
 
@@ -212,3 +214,12 @@ async def update_customer_usdt_address(
     await session.commit()
     await session.refresh(address)
     return CustomerUsdtAddressResponse.model_validate(address)
+
+
+@router.post("/{customer_id}/assign-usdt-wallet", response_model=UsdtWalletInventoryResponse, dependencies=[Depends(require_permissions(Permission.customer_write))])
+async def assign_next_customer_usdt_wallet(customer_id: int, session: AsyncSession = Depends(get_session)) -> UsdtWalletInventoryResponse:
+    try:
+        item = await UsdtWalletOpsService(session).auto_assign_next_available_wallet(customer_id=customer_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return UsdtWalletInventoryResponse.model_validate(item)

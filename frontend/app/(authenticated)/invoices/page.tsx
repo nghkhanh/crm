@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/table";
 import { apiClient } from "@/lib/api";
+import { getAccessToken } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { Customer, Invoice } from "@/types";
 
@@ -22,6 +22,44 @@ export default function InvoicesPage() {
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+
+  async function openInvoice(invoiceId: number) {
+    setMessage(null);
+    const token = getAccessToken();
+    if (!token) {
+      setMessage(t("login_failed"));
+      return;
+    }
+
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE}/api/invoices/${invoiceId}/export`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        let detail = `Yeu cau that bai: ${response.status}`;
+        try {
+          const payload = await response.json();
+          if (typeof payload?.detail === "string") {
+            detail = payload.detail;
+          }
+        } catch {
+          detail = `Yeu cau that bai: ${response.status}`;
+        }
+        throw new Error(detail);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : t("invoice_open_failed"));
+    }
+  }
 
   async function loadInvoices() {
     const params = new URLSearchParams();
@@ -42,7 +80,6 @@ export default function InvoicesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("invoices")} />
       <Card className="surface-muted">
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -105,9 +142,13 @@ export default function InvoicesPage() {
               <div className="flex flex-col gap-2">
                 <span className="font-medium text-slate-900">{invoice.invoice_number ?? `#${invoice.id}`}</span>
                 {invoice.file_url ? (
-                  <a className="text-sm font-medium text-[#1d4ed8]" href={`${PUBLIC_API_BASE}${invoice.file_url}`} target="_blank" rel="noreferrer">
+                  <button
+                    className="text-left text-sm font-medium text-[#1d4ed8]"
+                    onClick={() => openInvoice(invoice.id)}
+                    type="button"
+                  >
                     {t("invoice_open")}
-                  </a>
+                  </button>
                 ) : null}
               </div>
             </td>

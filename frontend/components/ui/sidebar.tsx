@@ -12,11 +12,6 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-full flex-col rounded-[32px] bg-[linear-gradient(180deg,#0f172a_0%,#111c34_100%)] px-4 py-5 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
-      <div className="mb-8 rounded-[24px] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
-        <p className="text-[11px] uppercase tracking-[0.42em] text-slate-400">Blue Media Group</p>
-        <h1 className="mt-3 text-[24px] font-semibold tracking-[-0.03em] text-white">Vision Line</h1>
-        <p className="mt-2 text-sm text-slate-300">Operational command center</p>
-      </div>
       <nav className="space-y-5 overflow-y-auto pr-1">
         {navigationSections.map((section) => (
           <div key={section.titleKey}>

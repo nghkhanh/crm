@@ -44,21 +44,10 @@ export default function LoginPage() {
         <section className="relative overflow-hidden rounded-[36px] border border-[#1e293b] bg-[linear-gradient(180deg,#0f172a_0%,#101b31_100%)] p-10 text-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
           <div className="absolute right-[-60px] top-[-60px] h-64 w-64 rounded-full bg-[rgba(59,130,246,0.18)] blur-3xl" />
           <div className="absolute bottom-[-40px] left-[-20px] h-44 w-44 rounded-full bg-[rgba(255,255,255,0.05)] blur-2xl" />
-          <p className="relative text-xs uppercase tracking-[0.42em] text-slate-400">Blue Media Group</p>
           <h1 className="relative mt-6 max-w-lg text-[54px] font-semibold leading-[1.02] tracking-[-0.04em]">{t("login_hero_title")}</h1>
           <p className="relative mt-6 max-w-xl text-[15px] leading-7 text-slate-300">
             {t("login_hero_description")}
           </p>
-          <div className="relative mt-10 grid max-w-lg gap-4 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-white/10 bg-white/6 p-5 backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Vision Line</p>
-              <p className="mt-3 text-2xl font-semibold">Internal SaaS</p>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/6 p-5 backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Overview</p>
-              <p className="mt-3 text-2xl font-semibold">Agency Ops</p>
-            </div>
-          </div>
         </section>
         <Card className="flex items-center rounded-[36px] p-8 lg:p-10">
           <form className="w-full space-y-5" onSubmit={onSubmit}>

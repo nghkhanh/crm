@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { TrendBars } from "@/components/ui/chart";
 import { MetricCard } from "@/components/ui/metric-card";
-import { PageHeader } from "@/components/ui/page-header";
 import { apiClient } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/card";
@@ -44,8 +43,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("dashboard")} />
-
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label={t("total_customers")} value={summary.total_customers.toString()} hint={t("active_client_base")} />
         <MetricCard label={t("wallet_balance")} value={`$${summary.total_wallet_balance.toFixed(2)}`} hint={t("wallet_hint")} />

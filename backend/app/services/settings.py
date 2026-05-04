@@ -17,6 +17,8 @@ SETTING_KEYS: dict[str, str] = {
     "agency_usdt_wallet": "Agency USDT wallet address",
     "trongrid_api_key": "TronGrid API key",
     "usdt_trc20_contract": "USDT TRC20 contract address used for deposit validation",
+    "usdt_trx_low_threshold": "Minimum TRX balance before wallet is flagged as low gas",
+    "usdt_sweep_min_balance": "Minimum USDT balance before wallet is flagged as ready to sweep",
     "sepay_webhook_secret": "SePay webhook secret",
     "sepay_api_token": "SePay API token for bank account balance checks",
     "sepay_bank_account_id": "SePay bank account ID to track company bank balance",

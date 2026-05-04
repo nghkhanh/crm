@@ -3,11 +3,17 @@
 import { useEffect, useState } from "react";
 
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/table";
 import { apiClient } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import { formatPlatform, formatTicketStatus, formatTicketType, formatTransactionType } from "@/lib/display";
+import {
+  formatPlatform,
+  formatTicketStatus,
+  formatTicketType,
+  formatTransactionSource,
+  formatTransactionStatus,
+  formatTransactionType
+} from "@/lib/display";
 import { AdAccount, Customer, CustomerUsdtAddress, Ticket, Transaction } from "@/types";
 
 type CustomerDetails = {
@@ -38,7 +44,6 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   return (
     <div className="space-y-6">
-      <PageHeader title={details.profile.full_name} description={t("customer_detail_description")} />
       <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <Card>
           <h3 className="text-lg font-semibold text-ink">{t("profile")}</h3>
@@ -82,12 +87,53 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
           </div>
         </Card>
       </div>
+      <DataTable
+        title={t("wallet_history")}
+        headers={[
+          t("type"),
+          t("transaction_source"),
+          t("transaction_status"),
+          t("amount"),
+          t("balance_before"),
+          t("balance_after"),
+          t("reference"),
+          t("created_at")
+        ]}
+      >
+        {details.recent_transactions.map((transaction) => (
+          <tr key={transaction.id} className="border-t border-line">
+            <td className="px-4 py-4">{formatTransactionType(transaction.type, language)}</td>
+            <td className="px-4 py-4">{formatTransactionSource(transaction.source, language)}</td>
+            <td className="px-4 py-4">{formatTransactionStatus(transaction.status, language)}</td>
+            <td className="px-4 py-4">${transaction.amount}</td>
+            <td className="px-4 py-4">${transaction.balance_before}</td>
+            <td className="px-4 py-4">${transaction.balance_after}</td>
+            <td className="px-4 py-4">{transaction.reference ?? "-"}</td>
+            <td className="px-4 py-4">{new Date(transaction.created_at).toLocaleString()}</td>
+          </tr>
+        ))}
+      </DataTable>
       <Card>
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-semibold text-ink">{t("usdt_deposit_addresses")}</h3>
             <p className="mt-1 text-sm text-mute">{t("usdt_deposit_addresses_description")}</p>
           </div>
+          <button
+            className="btn-secondary"
+            onClick={async () => {
+              setMessage(null);
+              try {
+                await apiClient.post(`/customers/${params.id}/assign-usdt-wallet`);
+                setMessage(t("wallet_assigned"));
+                await loadDetails();
+              } catch (error) {
+                setMessage(error instanceof Error ? error.message : t("wallet_assign_failed"));
+              }
+            }}
+          >
+            {t("assign_wallet_from_pool")}
+          </button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_0.6fr_auto]">
           <input
@@ -170,16 +216,6 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <td className="px-4 py-4">{account.status === "ACTIVE" ? t("active") : t("disabled")}</td>
             <td className="px-4 py-4">${account.balance}</td>
             <td className="px-4 py-4">${account.spend_today}</td>
-          </tr>
-        ))}
-      </DataTable>
-      <DataTable headers={[t("type"), t("amount"), t("reference"), t("created_at")]}>
-        {details.recent_transactions.map((transaction) => (
-          <tr key={transaction.id} className="border-t border-line">
-            <td className="px-4 py-4">{formatTransactionType(transaction.type, language)}</td>
-            <td className="px-4 py-4">${transaction.amount}</td>
-            <td className="px-4 py-4">{transaction.reference ?? "-"}</td>
-            <td className="px-4 py-4">{new Date(transaction.created_at).toLocaleString()}</td>
           </tr>
         ))}
       </DataTable>

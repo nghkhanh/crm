@@ -11,6 +11,7 @@ from app.api.routes import (
     referrals,
     settings,
     tickets,
+    treasury,
     transactions,
     webhooks,
 )
@@ -27,4 +28,5 @@ api_router.include_router(invoices.router, prefix="/invoices", tags=["invoices"]
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(referrals.router, prefix="/referrals", tags=["referrals"])
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
+api_router.include_router(treasury.router, prefix="/treasury", tags=["treasury"])
 api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])

@@ -5,6 +5,7 @@ import pytest
 from app.models.customer import Customer, CustomerStatus
 from app.models.referral import Referral
 from app.models.transaction import Transaction, TransactionType
+from app.schemas.referral import ReferralCreate, ReferralUpdate
 from app.services.referrals import ReferralService
 
 
@@ -33,3 +34,13 @@ async def test_referral_recalculate_uses_referee_topups(db_session):
 
     assert payload["updated"] == 1
     assert Decimal(referral.total_earned) == Decimal("7.50")
+
+
+def test_referral_create_rejects_same_customer():
+    with pytest.raises(ValueError):
+        ReferralCreate(referrer_id=1, referee_id=1, commission_rate=Decimal("5.00"))
+
+
+def test_referral_update_rejects_same_customer():
+    with pytest.raises(ValueError):
+        ReferralUpdate(referrer_id=2, referee_id=2, commission_rate=Decimal("7.00"))

@@ -22,6 +22,8 @@ class SystemSettingsUpdate(BaseModel):
     agency_usdt_wallet: str = ""
     trongrid_api_key: str = ""
     usdt_trc20_contract: str = ""
+    usdt_trx_low_threshold: str = "30"
+    usdt_sweep_min_balance: str = "1"
     sepay_webhook_secret: str = ""
     sepay_api_token: str = ""
     sepay_bank_account_id: str = ""
@@ -36,6 +38,8 @@ class SystemSettingsUpdate(BaseModel):
         "agency_usdt_wallet",
         "trongrid_api_key",
         "usdt_trc20_contract",
+        "usdt_trx_low_threshold",
+        "usdt_sweep_min_balance",
         "sepay_webhook_secret",
         "sepay_api_token",
         "sepay_bank_account_id",
@@ -106,6 +110,18 @@ class SystemSettingsUpdate(BaseModel):
         if value and (len(value) != 34 or not value.startswith("T")):
             raise ValueError("USDT TRC20 contract must be a valid TRON address")
         return value
+
+    @field_validator("usdt_trx_low_threshold", "usdt_sweep_min_balance")
+    @classmethod
+    def validate_non_negative_numeric(cls, value: str) -> str:
+        normalized = str(value or "").strip() or "0"
+        try:
+            numeric = float(normalized)
+        except ValueError as exc:
+            raise ValueError("Value must be numeric") from exc
+        if numeric < 0:
+            raise ValueError("Value must be non-negative")
+        return f"{numeric:g}"
 
     @field_validator("default_commission_rate")
     @classmethod

@@ -71,6 +71,42 @@ export type CustomerUsdtAddress = {
   created_at: string;
 };
 
+export type BankTreasurySnapshot = {
+  id: number;
+  provider: "sepay";
+  bank_account_id: string;
+  account_number?: string | null;
+  account_name?: string | null;
+  currency: string;
+  balance: string;
+  available_balance?: string | null;
+  status_message?: string | null;
+  synced_at: string;
+  created_at: string;
+};
+
+export type UsdtWalletInventory = {
+  id: number;
+  network: "trc20";
+  address: string;
+  label?: string | null;
+  status: "available" | "assigned" | "disabled";
+  customer_id?: number | null;
+  customer_usdt_address_id?: number | null;
+  trx_balance: string;
+  usdt_balance: string;
+  gas_status: "unknown" | "ok" | "low" | "missing";
+  sweep_status: "idle" | "ready" | "pending" | "completed" | "failed";
+  sweep_destination?: string | null;
+  last_sweep_tx_id?: string | null;
+  assigned_at?: string | null;
+  last_balance_synced_at?: string | null;
+  requested_sweep_at?: string | null;
+  last_sweep_at?: string | null;
+  note?: string | null;
+  created_at: string;
+};
+
 export type AdAccount = {
   id: number;
   customer_id: number;

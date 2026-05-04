@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/table";
 import { apiClient } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import { formatFacebookPaymentStatus, formatPlatform, formatSpendProvider } from "@/lib/display";
+import { formatFacebookPaymentStatus } from "@/lib/display";
 import { AdAccount } from "@/types";
 
 export default function AdAccountsPage() {
@@ -98,43 +97,28 @@ export default function AdAccountsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t("ad_accounts")}
-        action={<button className="btn-primary" onClick={syncAccounts}>{t("sync_facebook")}</button>}
-      />
       {message ? <div className="stat-chip">{message}</div> : null}
-      <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-[22px] border border-[#e3eaf4] bg-white p-4">
-          <p className="text-sm text-mute">{t("payment_due")}</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900">
-            $
-            {accounts
-              .reduce((sum, account) => sum + Number(account.amount_due || 0), 0)
-              .toFixed(2)}
-          </p>
-        </div>
-        <div className="rounded-[22px] border border-[#e3eaf4] bg-white p-4">
-          <p className="text-sm text-mute">{t("prepaid_balance_label")}</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900">
-            $
-            {accounts
-              .reduce((sum, account) => sum + Number(account.prepaid_balance || 0), 0)
-              .toFixed(2)}
-          </p>
-        </div>
-        <div className="rounded-[22px] border border-[#e3eaf4] bg-white p-4">
-          <p className="text-sm text-mute">{t("payment_status")}</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900">
-            {accounts.filter((account) => account.payment_status === "overdue").length}
-          </p>
-          <p className="mt-1 text-sm text-mute">{language === "vi" ? "tài khoản rủi ro" : "accounts at risk"}</p>
-        </div>
-      </div>
       <Card className="surface-muted">
-        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <h3 className="text-xl font-semibold tracking-[-0.03em] text-slate-900">{t("payment_control")}</h3>
+        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <span className="stat-chip">{accounts.length} accounts</span>
+            <span className="stat-chip">
+              {t("payment_due")}: $
+              {accounts.reduce((sum, account) => sum + Number(account.amount_due || 0), 0).toFixed(2)}
+            </span>
+            <span className="stat-chip">
+              {t("prepaid_balance_label")}: $
+              {accounts.reduce((sum, account) => sum + Number(account.prepaid_balance || 0), 0).toFixed(2)}
+            </span>
+            <span className="stat-chip">
+              {t("payment_status")}: {accounts.filter((account) => account.payment_status === "overdue").length}
+            </span>
+          </div>
+          <button className="btn-primary" onClick={syncAccounts} type="button">
+            {t("sync_facebook")}
+          </button>
         </div>
-        <form className="grid gap-3 md:grid-cols-5" onSubmit={updatePaymentControl}>
+        <form className="grid gap-3 xl:grid-cols-[1.4fr_0.9fr_0.8fr_0.8fr_0.8fr_auto]" onSubmit={updatePaymentControl}>
           <select
             className="field"
             value={editingAccountId}
@@ -175,11 +159,9 @@ export default function AdAccountsPage() {
             value={editForm.payment_threshold}
             onChange={(event) => setEditForm((current) => ({ ...current, payment_threshold: event.target.value }))}
           />
-          <div className="md:col-span-5 flex justify-end">
-            <button className="btn-primary" type="submit" disabled={!editingAccountId}>
-              {t("update_payment_control")}
-            </button>
-          </div>
+          <button className="btn-secondary xl:h-full" type="submit" disabled={!editingAccountId}>
+            {t("update_payment_control")}
+          </button>
         </form>
       </Card>
       <DataTable
@@ -187,16 +169,10 @@ export default function AdAccountsPage() {
           t("account_id"),
           t("account_name"),
           t("status"),
-          t("spend_provider"),
           t("balance"),
           t("spend_today_table"),
-          t("spend_7d"),
           t("payment_due"),
-          t("prepaid_balance_label"),
-          t("payment_threshold_label"),
           t("payment_status"),
-          t("platform"),
-          t("last_synced"),
         ]}
       >
         {accounts.map((account) => (
@@ -206,20 +182,14 @@ export default function AdAccountsPage() {
             <td className="px-5 py-4">
               <Badge tone={account.status === "ACTIVE" ? "success" : "danger"}>{account.status === "ACTIVE" ? t("active") : t("disabled")}</Badge>
             </td>
-            <td className="px-5 py-4">{formatSpendProvider(account.spend_provider, language)}</td>
             <td className="px-5 py-4">${account.balance}</td>
             <td className="px-5 py-4">${account.spend_today}</td>
-            <td className="px-5 py-4">${account.spend_7d}</td>
             <td className="px-5 py-4">${account.amount_due}</td>
-            <td className="px-5 py-4">${account.prepaid_balance}</td>
-            <td className="px-5 py-4">${account.payment_threshold}</td>
             <td className="px-5 py-4">
               <Badge tone={account.payment_status === "healthy" ? "success" : account.payment_status === "due" ? "warning" : "danger"}>
                 {formatFacebookPaymentStatus(account.payment_status, language)}
               </Badge>
             </td>
-            <td className="px-5 py-4">{formatPlatform(account.platform, language)}</td>
-            <td className="px-5 py-4 text-mute">{account.last_synced_at ? new Date(account.last_synced_at).toLocaleString() : "-"}</td>
           </tr>
         ))}
       </DataTable>

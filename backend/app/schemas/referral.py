@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from app.schemas.common import ORMBase
 
@@ -10,6 +10,24 @@ class ReferralCreate(BaseModel):
     referrer_id: int
     referee_id: int
     commission_rate: Decimal
+
+    @model_validator(mode="after")
+    def validate_participants(self):
+        if self.referrer_id == self.referee_id:
+            raise ValueError("Người giới thiệu và người được giới thiệu phải khác nhau.")
+        return self
+
+
+class ReferralUpdate(BaseModel):
+    referrer_id: int
+    referee_id: int
+    commission_rate: Decimal
+
+    @model_validator(mode="after")
+    def validate_participants(self):
+        if self.referrer_id == self.referee_id:
+            raise ValueError("Người giới thiệu và người được giới thiệu phải khác nhau.")
+        return self
 
 
 class ReferralResponse(ORMBase):
